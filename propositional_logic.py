@@ -7,65 +7,78 @@ class symbol:
         self.params = []
         self.name = ""
 
-    def assign(self,dic):
-        for k in dic.keys:
-            if k == self.name:
-                self.value = dic[k]
-            elif self.params:
-                for p in self.params:
-                    p.assign(dic)
-                self.update()
+    def assign(self, dic, model):
+        if self.name in dic.keys():
+            self.value = dic[self.name] & model
+        elif self.params:
+            for p in self.params:
+                p.assign(dic, model)
+        self.update()
         return self
 
     def update(self):
         pass
 
 
-def pl_not(sym:symbol):
-    new_sym = symbol()
-    new_sym.value = not sym.value
-    new_sym.type = "not"
-    new_sym.params = sym
-    return new_sym
+class pl_not(symbol):
+
+    def __init__(self, sym):
+        symbol.__init__(self)
+        self.type = "not"
+        self.params = [sym]
+
+    def update(self):
+        self.value = not self.params[0].value
 
 
-def pl_and(sym1:symbol, sym2:symbol):
-    new_sym = symbol()
-    new_sym.value = sym1.value and sym2.value
-    new_sym.type = "and"
-    new_sym.params = [sym1,sym2]
-    return new_sym
+class pl_and(symbol):
+
+    def __init__(self, sym1,sym2):
+        symbol.__init__(self)
+        self.type = "and"
+        self.params = [sym1, sym2]
+
+    def update(self):
+        self.value = self.params[0].value and self.params[1].value
 
 
-def pl_or(sym1:symbol, sym2:symbol):
-    new_sym = symbol()
-    new_sym.value = sym1.value or sym2.value
-    new_sym.type = "or"
-    new_sym.params = [sym1, sym2]
-    return new_sym
+class pl_or(symbol):
+
+    def __init__(self, sym1, sym2):
+        symbol.__init__(self)
+        self.type = "or"
+        self.params = [sym1, sym2]
+
+    def update(self):
+        self.value = self.params[0].value or self.params[1].value
 
 
-def pl_imply(sym1:symbol,sym2:symbol):
-    new_sym = symbol()
-    if sym1.value == True and sym2.value == False:
-        new_sym.value = False
-    else:
-        new_sym.value = True
-    new_sym.type = "imply"
-    new_sym.params = [sym1, sym2]
-    return new_sym
+class pl_imply(symbol):
+
+    def __init__(self, sym1, sym2):
+        symbol.__init__(self)
+        self.type = "imply"
+        self.params = [sym1, sym2]
+
+    def update(self):
+        if self.params[0].value and not self.params[1].value:
+            self.value = False
+        else:
+            self.value = True
 
 
-def pl_bid(sym1:symbol, sym2:symbol):
-    # biconditional
-    new_sym = symbol()
-    if sym1.value == sym2.value:
-        new_sym.value = True
-    else:
-        new_sym.value = False
-    new_sym.type = 'bid'
-    new_sym.params = [sym1, sym2]
-    return new_sym
+class pl_bid(symbol):
+
+    def __init__(self, sym1, sym2):
+        symbol.__init__(self)
+        self.type = "bid"
+        self.params = [sym1, sym2]
+
+    def update(self):
+        if bool(self.params[0].value) == bool(self.params[1].value):
+            self.value = True
+        else:
+            self.value = False
 
 
 def same(s1, s2):
@@ -93,14 +106,6 @@ def compose(symbols):
     pass
 
 
-def compliment(sym):
-    # find the compliment of sym
-    comp = symbol()
-    if sym.type != "not" or sym.params == [] or sym.params[0].type != "atom":
-        return None
-    return sym.params[0]
-
-
 def symbols(s1):
     # return all the symbols in a nested symbol
     # symbs should be a list to hold symbols in recursions
@@ -125,3 +130,12 @@ def operators(s1):  # should not include not?
             oprts.append(ele.type)
             oprts += operators(ele)
     return oprts
+
+
+if __name__ == "__main__":
+    p = symbol()
+    p.value = False
+    print(p.type)
+    np = pl_not(p)
+    np.update()
+    print(np.value)
