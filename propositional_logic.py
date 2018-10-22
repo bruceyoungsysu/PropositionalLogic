@@ -101,11 +101,6 @@ def same(s1, s2):
     return True
 
 
-def compose(symbols):
-    # compose the symbols to a symbol
-    pass
-
-
 def symbols(s1):
     # return all the symbols in a nested symbol
     # symbs should be a list to hold symbols in recursions
